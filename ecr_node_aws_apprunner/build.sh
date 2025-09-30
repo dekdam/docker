@@ -66,7 +66,7 @@ EOF
   docker rmi $imageOld
 else
   # image does not exist
-  sh ./../notify.sh "Build *$ENV_MODE* error $(sh search_and_get_lines.sh "Error" build-log/$BUILD_FILE.log)"
+  sh ./../notify.sh "Build *$ENV_MODE* error $(sh ./../search_and_get_lines.sh "Error" build-log/$BUILD_FILE.log)"
 fi
 
 # remove docker image <none>
