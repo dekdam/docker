@@ -1,0 +1,35 @@
+stages:
+  - deploy
+
+deploy_to_server:
+  stage: deploy
+  
+  # Use a Docker image that includes ssh-client (alpine is a small image)
+  image: alpine:latest
+
+  # Pre-script steps (install tools and setup SSH)
+  before_script:
+    - 'which ssh-agent || ( apk update && apk add openssh-client )'  # install ssh-client
+    - mkdir -p ~/.ssh                                              # create folder .ssh
+    - chmod 700 ~/.ssh                                             # setup permission
+    
+    # Add Private Key from Variable to Agent
+    - eval $(ssh-agent -s)
+    - (echo "$SSH_PRIVATE_KEY" && echo) | tr -d '\r' | ssh-add -
+    
+    # Add server host key
+    - '[[ -z "$SSH_SERVER_HOSTKEYS" ]] || echo "$SSH_SERVER_HOSTKEYS" >> ~/.ssh/known_hosts'
+
+  # Main script to run
+  script:
+    - echo "Connecting to server for deploy..."
+    - |
+      ssh ${SSH_USER}@${SSH_HOST} "
+        echo 'Connected! Pulling...'
+        # pull code and deploy
+        echo 'Deploy success!'
+      "
+
+  only:
+    - develop
+    - uat
